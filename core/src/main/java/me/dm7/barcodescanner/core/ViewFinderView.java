@@ -67,6 +67,9 @@ public class ViewFinderView extends View implements IViewFinder {
         mBorderPaint.setStrokeWidth(mDefaultBorderStrokeWidth);
 
         mBorderLineLength = mDefaultBorderLineLength;
+
+        //default to square viewfinder
+        mSquareViewFinder = true;
     }
 
     public void setLaserColor(int laserColor) {

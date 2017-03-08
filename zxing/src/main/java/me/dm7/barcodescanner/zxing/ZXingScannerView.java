@@ -28,7 +28,12 @@ import me.dm7.barcodescanner.core.BarcodeScannerView;
 import me.dm7.barcodescanner.core.DisplayUtils;
 
 public class ZXingScannerView extends BarcodeScannerView {
+    public interface CameraStatusCallback {
+        void onCameraReady();
+    }
+
     private static final String TAG = "ZXingScannerView";
+    private boolean cameraReady = false;
 
     public interface ResultHandler {
         public void handleResult(Result rawResult);
@@ -38,6 +43,7 @@ public class ZXingScannerView extends BarcodeScannerView {
     public static final List<BarcodeFormat> ALL_FORMATS = new ArrayList<BarcodeFormat>();
     private List<BarcodeFormat> mFormats;
     private ResultHandler mResultHandler;
+    private List<CameraStatusCallback> mCameraStatusCallbacks = new ArrayList<>();
 
     static {
         ALL_FORMATS.add(BarcodeFormat.UPC_A);
@@ -93,7 +99,19 @@ public class ZXingScannerView extends BarcodeScannerView {
         if(mResultHandler == null) {
             return;
         }
-        
+
+        if (!cameraReady) {
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    for (CameraStatusCallback c : mCameraStatusCallbacks) {
+                        c.onCameraReady();
+                    }
+                }
+            });
+            cameraReady = true;
+        }
+
         try {
             Camera.Parameters parameters = camera.getParameters();
             Camera.Size size = parameters.getPreviewSize();
@@ -178,5 +196,21 @@ public class ZXingScannerView extends BarcodeScannerView {
         }
 
         return source;
+    }
+
+    @Override
+    public void stopCamera() {
+        cameraReady = false;
+        super.stopCamera();
+    }
+
+    public void registerCameraStatusCallback(CameraStatusCallback callback) {
+        if (callback != null)
+            mCameraStatusCallbacks.add(callback);
+    }
+
+    public void unregisterCameraStatusCallback(CameraStatusCallback callback) {
+        if (callback != null)
+            mCameraStatusCallbacks.remove(callback);
     }
 }

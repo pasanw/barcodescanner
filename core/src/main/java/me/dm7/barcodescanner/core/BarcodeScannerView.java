@@ -76,9 +76,9 @@ public abstract class BarcodeScannerView extends FrameLayout implements Camera.P
 
     public void startCamera(int cameraId) {
         if(mCameraHandlerThread == null) {
-            mCameraHandlerThread = new CameraHandlerThread(this);
+            mCameraHandlerThread = new CameraHandlerThread();
         }
-        mCameraHandlerThread.startCamera(cameraId);
+        mCameraHandlerThread.startCamera(cameraId, this);
     }
 
     public void setupCameraPreview(CameraWrapper cameraWrapper) {
@@ -98,15 +98,19 @@ public abstract class BarcodeScannerView extends FrameLayout implements Camera.P
     }
 
     public void stopCamera() {
-        if(mCameraWrapper != null) {
+        mCameraHandlerThread.stopCamera(this);
+    }
+
+    public void stopAndCleanupCameraPreview() {
+        if(mPreview != null) {
             mPreview.stopCameraPreview();
             mPreview.setCamera(null, null);
-            mCameraWrapper.mCamera.release();
-            mCameraWrapper = null;
         }
-        if(mCameraHandlerThread != null) {
-            mCameraHandlerThread.quit();
-            mCameraHandlerThread = null;
+    }
+
+    public void releaseAndCleanupCamera() {
+        if(mCameraWrapper.mCamera != null) {
+            mCameraWrapper.mCamera.release();
         }
     }
 
