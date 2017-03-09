@@ -15,6 +15,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 
+import com.google.zxing.client.android.camera.CameraConfigurationUtils;
+
 import java.util.List;
 
 public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
@@ -122,16 +124,17 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     }
 
     public void setupCameraParameters() {
-        Camera.Size optimalSize = getOptimalPreviewSize();
         Camera.Parameters parameters = mCameraWrapper.mCamera.getParameters();
-        parameters.setPreviewSize(optimalSize.width, optimalSize.height);
+        Point optimalSize = CameraConfigurationUtils.findBestPreviewSizeValue(parameters, DisplayUtils.getScreenResolution(getContext()));
+        parameters.setPreviewSize(optimalSize.x, optimalSize.y);
         mCameraWrapper.mCamera.setParameters(parameters);
-        adjustViewSize(optimalSize);
+
+        adjustViewSize(optimalSize.x, optimalSize.y);
     }
 
-    private void adjustViewSize(Camera.Size cameraSize) {
+    private void adjustViewSize(int width, int height) {
         Point previewSize = convertSizeToLandscapeOrientation(new Point(getWidth(), getHeight()));
-        float cameraRatio = ((float) cameraSize.width) / cameraSize.height;
+        float cameraRatio = ((float) width) / height;
         float screenRatio = ((float) previewSize.x) / previewSize.y;
 
         if (screenRatio > cameraRatio) {
