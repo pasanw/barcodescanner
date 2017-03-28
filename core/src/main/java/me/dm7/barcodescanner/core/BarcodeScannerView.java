@@ -80,19 +80,6 @@ public abstract class BarcodeScannerView extends FrameLayout implements Camera.P
         }
         mCameraHandlerThread.startCamera(cameraId, this);
     }
-
-    public void setupCameraPreview(CameraWrapper cameraWrapper) {
-        mCameraWrapper = cameraWrapper;
-        if(mCameraWrapper != null) {
-            setupLayout(mCameraWrapper);
-            mViewFinderView.setupViewFinder();
-            if(mFlashState != null) {
-                setFlash(mFlashState);
-            }
-            setAutoFocus(mAutofocusState);
-        }
-    }
-
     public void startCamera() {
         startCamera(CameraUtils.getDefaultCameraId());
     }
@@ -101,16 +88,35 @@ public abstract class BarcodeScannerView extends FrameLayout implements Camera.P
         mCameraHandlerThread.stopCamera(this);
     }
 
-    public void stopAndCleanupCameraPreview() {
-        if(mPreview != null) {
-            mPreview.stopCameraPreview();
-            mPreview.setCamera(null, null);
+    public void switchCamera(int cameraId) {
+        if (mCameraHandlerThread != null) {
+            mCameraHandlerThread.stopCamera(this);
         }
+        startCamera(cameraId);
     }
 
     public void releaseAndCleanupCamera() {
         if(mCameraWrapper.mCamera != null) {
             mCameraWrapper.mCamera.release();
+        }
+    }
+
+    public void setupCameraPreview(CameraWrapper cameraWrapper) {
+        mCameraWrapper = cameraWrapper;
+        if (mCameraWrapper != null) {
+            setupLayout(mCameraWrapper);
+            mViewFinderView.setupViewFinder();
+            if (mFlashState != null) {
+                setFlash(mFlashState);
+            }
+            setAutoFocus(mAutofocusState);
+        }
+    }
+
+    public void stopAndCleanupCameraPreview() {
+        if(mPreview != null) {
+            mPreview.stopCameraPreview();
+            mPreview.setCamera(null, null);
         }
     }
 
