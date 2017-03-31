@@ -96,7 +96,7 @@ public abstract class BarcodeScannerView extends FrameLayout implements Camera.P
     }
 
     public void releaseAndCleanupCamera() {
-        if(mCameraWrapper.mCamera != null) {
+        if (mCameraWrapper != null && mCameraWrapper.mCamera != null) {
             mCameraWrapper.mCamera.release();
         }
     }
