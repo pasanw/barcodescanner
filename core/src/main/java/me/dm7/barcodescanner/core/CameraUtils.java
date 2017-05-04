@@ -37,15 +37,28 @@ public class CameraUtils {
     /** A safe way to get an instance of the Camera object. */
     public static Camera getCameraInstance(int cameraId) {
         Camera c = null;
-        try {
-            if(cameraId == -1) {
-                c = Camera.open(); // attempt to get a Camera instance
-            } else {
-                c = Camera.open(cameraId); // attempt to get a Camera instance
+        /** Since we close the camera on a background thread, we retry to allow some time for the camera
+            to be released so that cases like rotation do not result in a failed camera retrieval **/
+        for (int numAttempts = 0; numAttempts < 15; numAttempts++) {
+            try {
+                if (cameraId == -1) {
+                    c = Camera.open(); // attempt to get a Camera instance
+                } else {
+                    c = Camera.open(cameraId); // attempt to get a Camera instance
+                }
+
+                if (c != null) {
+                    return c;
+                }
+            } catch (Exception e) {
+                // Camera is not available (in use or does not exist)
             }
-        }
-        catch (Exception e) {
-            // Camera is not available (in use or does not exist)
+
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
         }
         return c; // returns null if camera is unavailable
     }
