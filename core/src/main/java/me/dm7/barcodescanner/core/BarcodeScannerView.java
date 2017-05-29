@@ -11,12 +11,12 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 
-public abstract class BarcodeScannerView extends FrameLayout implements Camera.PreviewCallback  {
+public abstract class BarcodeScannerView extends FrameLayout implements Camera.PreviewCallback {
+    private static CameraHandlerThread mCameraHandlerThread;
     private CameraWrapper mCameraWrapper;
     private CameraPreview mPreview;
     private IViewFinder mViewFinderView;
     private Rect mFramingRectInPreview;
-    private CameraHandlerThread mCameraHandlerThread;
     private Boolean mFlashState;
     private boolean mAutofocusState = true;
     private boolean mShouldScaleToFill = true;
@@ -80,6 +80,7 @@ public abstract class BarcodeScannerView extends FrameLayout implements Camera.P
         }
         mCameraHandlerThread.startCamera(cameraId, this);
     }
+
     public void startCamera() {
         startCamera(CameraUtils.getDefaultCameraId());
     }
