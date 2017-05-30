@@ -74,7 +74,7 @@ public abstract class BarcodeScannerView extends FrameLayout implements Camera.P
         return new ViewFinderView(context);
     }
 
-    public void startCamera(int cameraId) {
+    public synchronized void startCamera(int cameraId) {
         if(mCameraHandlerThread == null) {
             mCameraHandlerThread = new CameraHandlerThread();
         }
@@ -94,12 +94,6 @@ public abstract class BarcodeScannerView extends FrameLayout implements Camera.P
             mCameraHandlerThread.stopCamera(this);
         }
         startCamera(cameraId);
-    }
-
-    public void releaseAndCleanupCamera() {
-        if (mCameraWrapper != null && mCameraWrapper.mCamera != null) {
-            mCameraWrapper.mCamera.release();
-        }
     }
 
     public void setupCameraPreview(CameraWrapper cameraWrapper) {

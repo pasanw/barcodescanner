@@ -3,29 +3,27 @@ package me.dm7.barcodescanner.core;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
-import android.util.Log;
 
 // This code is mostly based on the top answer here: http://stackoverflow.com/questions/18149964/best-use-of-handlerthread-over-other-similar-classes
-public class CameraHandlerThread extends HandlerThread {
-    private static final NonReentrantLock lock = new NonReentrantLock();
-    private static CameraWrapper cameraWrapper;
+class CameraHandlerThread extends HandlerThread {
+    private final NonReentrantLock lock = new NonReentrantLock();
+    private CameraWrapper cameraWrapper;
     private final Handler localHandler;
     private final Handler mainHandler;
 
-    public CameraHandlerThread() {
+    CameraHandlerThread() {
         super("CameraHandlerThread");
         start();
         localHandler = new Handler(getLooper());
         mainHandler = new Handler(Looper.getMainLooper());
     }
 
-    public void startCamera(final int cameraId, final BarcodeScannerView mScannerView) {
+    void startCamera(final int cameraId, final BarcodeScannerView mScannerView) {
         localHandler.post(new Runnable() {
             @Override
             public void run() {
                 try {
                     lock.lock();
-                    Log.e("CMDBG: "+Thread.currentThread().getId(), "startCamera: Lock acquired");
                     cameraWrapper = CameraWrapper.getWrapper(CameraUtils.getCameraInstance(cameraId), cameraId);
 
                     mainHandler.post(new Runnable() {
@@ -41,7 +39,7 @@ public class CameraHandlerThread extends HandlerThread {
         });
     }
 
-    public void stopCamera(final BarcodeScannerView mScannerView) {
+    void stopCamera(final BarcodeScannerView mScannerView) {
         localHandler.post(new Runnable() {
             @Override
             public void run() {
@@ -57,7 +55,6 @@ public class CameraHandlerThread extends HandlerThread {
                 });
 
                 lock.unlock();
-                Log.e("CMDBG: "+Thread.currentThread().getId(), "stopCamera: Lock released");
             }
         });
     }

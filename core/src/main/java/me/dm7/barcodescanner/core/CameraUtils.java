@@ -1,7 +1,6 @@
 package me.dm7.barcodescanner.core;
 
 import android.hardware.Camera;
-import android.util.Log;
 
 import java.util.List;
 
@@ -18,21 +17,42 @@ public class CameraUtils {
 
     /** Favor back-facing camera by default. If none exists, fallback to whatever camera is available **/
     public static int getDefaultCameraId() {
-        return getCameraId(CameraFacing.BACK);
+        if (getNumberOfCameras() == 0) {
+            return -1;
+        }
+
+        return getCameraId((getNumberOfFacingCameras(CameraFacing.BACK) != 0) ? CameraFacing.BACK : CameraFacing.FRONT);
     }
 
+    /** Returns the first camera for a given direction. If a camera does not exist for that direction, -1 is returned **/
     public static int getCameraId(CameraFacing facing) {
-        int numberOfCameras = Camera.getNumberOfCameras();
+        int numberOfCameras = getNumberOfCameras();
         Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
-        int defaultCameraId = -1;
         for (int i = 0; i < numberOfCameras; i++) {
-            defaultCameraId = i;
             Camera.getCameraInfo(i, cameraInfo);
             if (cameraInfo.facing == facing.ordinal()) {
                 return i;
             }
         }
-        return defaultCameraId;
+        return -1;
+    }
+
+    public static int getNumberOfCameras() {
+        return Camera.getNumberOfCameras();
+    }
+
+    public static int getNumberOfFacingCameras(CameraFacing facing) {
+        int numberOfCameras = getNumberOfCameras();
+        int numberOfFacingCameras = 0;
+        Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
+        for (int i = 0; i < numberOfCameras; i++) {
+            Camera.getCameraInfo(i, cameraInfo);
+            if ((cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_BACK && facing == CameraFacing.BACK)
+                    || (cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_FRONT && facing == CameraFacing.FRONT)) {
+                numberOfFacingCameras++;
+            }
+        }
+        return numberOfFacingCameras;
     }
 
     /** A safe way to get an instance of the Camera object. */
@@ -47,11 +67,6 @@ public class CameraUtils {
         }
         catch (Exception e) {
             // Camera is not available (in use or does not exist)
-        }
-        if (c == null) {
-            Log.e("CMDBG: "+Thread.currentThread().getId(), "camera instance failed");
-        } else {
-            Log.e("CMDBG: "+Thread.currentThread().getId(), "camera instance succeeded");
         }
         return c; // returns null if camera is unavailable
     }
