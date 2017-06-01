@@ -15,8 +15,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 
-import com.google.zxing.client.android.camera.CameraConfigurationUtils;
-
 import java.util.List;
 
 public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
@@ -124,12 +122,12 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     }
 
     public void setupCameraParameters() {
+        Camera.Size optimalSize = getOptimalPreviewSize();
         Camera.Parameters parameters = mCameraWrapper.mCamera.getParameters();
-        Point optimalSize = CameraConfigurationUtils.findBestPreviewSizeValue(parameters, DisplayUtils.getScreenResolution(getContext()));
-        parameters.setPreviewSize(optimalSize.x, optimalSize.y);
+        parameters.setPreviewSize(optimalSize.width, optimalSize.height);
         mCameraWrapper.mCamera.setParameters(parameters);
 
-        adjustViewSize(optimalSize.x, optimalSize.y);
+        adjustViewSize(optimalSize.width, optimalSize.height);
     }
 
     private void adjustViewSize(int width, int height) {
