@@ -12,14 +12,14 @@ import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 
 public abstract class BarcodeScannerView extends FrameLayout implements Camera.PreviewCallback {
-    private static CameraHandlerThread mCameraHandlerThread;
-    private CameraWrapper mCameraWrapper;
-    private CameraPreview mPreview;
-    private IViewFinder mViewFinderView;
-    private Rect mFramingRectInPreview;
-    private Boolean mFlashState;
-    private boolean mAutofocusState = true;
-    private boolean mShouldScaleToFill = true;
+    protected static CameraHandlerThread mCameraHandlerThread;
+    protected CameraWrapper mCameraWrapper;
+    protected CameraPreview mPreview;
+    protected IViewFinder mViewFinderView;
+    protected Rect mFramingRectInPreview;
+    protected Boolean mFlashState;
+    protected boolean mAutofocusState = true;
+    protected boolean mShouldScaleToFill = true;
 
     public BarcodeScannerView(Context context) {
         super(context);
@@ -40,26 +40,32 @@ public abstract class BarcodeScannerView extends FrameLayout implements Camera.P
     }
 
     public final void setupLayout(CameraWrapper cameraWrapper) {
-        removeAllViews();
+        if (mPreview == null || mViewFinderView == null) {
+            removeAllViews();
+            mPreview = new CameraPreview(getContext(), cameraWrapper, this);
+            mPreview.setShouldScaleToFill(mShouldScaleToFill);
+            if (!mShouldScaleToFill) {
+                RelativeLayout relativeLayout = new RelativeLayout(getContext());
+                relativeLayout.setGravity(Gravity.CENTER);
+                relativeLayout.setBackgroundColor(Color.BLACK);
+                relativeLayout.addView(mPreview);
+                addView(relativeLayout);
+            } else {
+                addView(mPreview);
+            }
 
-        mPreview = new CameraPreview(getContext(), cameraWrapper, this);
-        mPreview.setShouldScaleToFill(mShouldScaleToFill);
-        if (!mShouldScaleToFill) {
-            RelativeLayout relativeLayout = new RelativeLayout(getContext());
-            relativeLayout.setGravity(Gravity.CENTER);
-            relativeLayout.setBackgroundColor(Color.BLACK);
-            relativeLayout.addView(mPreview);
-            addView(relativeLayout);
+            mViewFinderView = createViewFinderView(getContext());
+            if (mViewFinderView instanceof View) {
+                addView((View) mViewFinderView);
+            } else {
+                throw new IllegalArgumentException("IViewFinder object returned by " +
+                        "'createViewFinderView()' should be instance of android.view.View");
+            }
+            mViewFinderView.setupViewFinder();
         } else {
-            addView(mPreview);
-        }
-
-        mViewFinderView = createViewFinderView(getContext());
-        if (mViewFinderView instanceof View) {
-            addView((View) mViewFinderView);
-        } else {
-            throw new IllegalArgumentException("IViewFinder object returned by " +
-                    "'createViewFinderView()' should be instance of android.view.View");
+            // Re-use the SurfaceView/CameraPreview and ViewFinder
+            mPreview.setCamera(cameraWrapper, this);
+            mPreview.showCameraPreview();
         }
     }
 
@@ -86,6 +92,7 @@ public abstract class BarcodeScannerView extends FrameLayout implements Camera.P
     }
 
     public void stopCamera() {
+        stopAndCleanupCameraPreview();
         mCameraHandlerThread.stopCamera(this);
     }
 
@@ -100,7 +107,6 @@ public abstract class BarcodeScannerView extends FrameLayout implements Camera.P
         mCameraWrapper = cameraWrapper;
         if (mCameraWrapper != null) {
             setupLayout(mCameraWrapper);
-            mViewFinderView.setupViewFinder();
             if (mFlashState != null) {
                 setFlash(mFlashState);
             }

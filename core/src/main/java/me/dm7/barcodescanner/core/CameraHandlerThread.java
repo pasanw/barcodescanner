@@ -47,13 +47,6 @@ class CameraHandlerThread extends HandlerThread {
                     cameraWrapper.mCamera.release();
                 }
 
-                mainHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        mScannerView.stopAndCleanupCameraPreview();
-                    }
-                });
-
                 lock.unlock();
             }
         });
