@@ -12,6 +12,6 @@ ext {
 
 dependencies {
     //compile project(":core")
-    compile 'com.github.pasanw.barcodescanner:core:2.1.1'
+    compile 'com.github.pasanw.barcodescanner:core:2.1.4'
     compile 'com.google.zxing:core:3.2.1'
 }
